@@ -1,0 +1,54 @@
+#include "i2c.h"
+
+void I2C_INIT(void)
+{
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+	RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
+	
+	GPIOB->MODER &= ~GPIO_MODER_MODER10 & ~GPIO_MODER_MODER11;
+	GPIOB->MODER |= GPIO_MODER_MODER10_1 | GPIO_MODER_MODER11_1;
+	
+	GPIOB->AFR[1] |= 0x00001100;
+	
+	I2C2->TIMINGR = 0x0000020B;
+	I2C2->CR1 = I2C_CR1_PE;
+}
+
+
+void I2C_SET_PORTB_OUTPUTS(void)
+{
+	I2C2->CR2 = (2 << I2C_CR2_NBYTES_Pos) | (0x20 <<
+								(I2C_CR2_SADD_Pos + 1)) | I2C_CR2_START;
+	
+	while((I2C2->ISR & I2C_ISR_TXIS) == RESET) {}
+	I2C2->TXDR = 0x01;
+	
+	while((I2C2->ISR & I2C_ISR_TXIS) == RESET) {}
+	I2C2->TXDR = 0x00;
+}
+
+void I2C_SEND(uint8_t PIN_NUMBER)
+{
+	I2C2->CR2 = (2 << I2C_CR2_NBYTES_Pos) | I2C_CR2_AUTOEND | (0x20 <<
+								(I2C_CR2_SADD_Pos + 1)) | I2C_CR2_START;
+	
+	while((I2C2->ISR & I2C_ISR_TXIS) == RESET) {}
+	I2C2->TXDR = 0x15;
+	
+	while((I2C2->ISR & I2C_ISR_TXIS) == RESET) {}
+	I2C2->TXDR = 0x00000000 | (0x0000001 << PIN_NUMBER);
+}
+
+void I2C_SEND_REGISTER(uint8_t REG)
+{
+	I2C2->CR2 = (2 << I2C_CR2_NBYTES_Pos) | I2C_CR2_AUTOEND | (0x20 <<
+								(I2C_CR2_SADD_Pos + 1)) | I2C_CR2_START;
+	
+	while((I2C2->ISR & I2C_ISR_TXIS) == RESET) {}
+	I2C2->TXDR = 0x15;
+	
+	while((I2C2->ISR & I2C_ISR_TXIS) == RESET) {}
+	I2C2->TXDR = (uint8_t)REG;
+}
