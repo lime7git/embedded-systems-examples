@@ -7,6 +7,5 @@ typedef enum {LED_OFF = 0, LED_ON = 1}eGPIO_STATE;
 
 	void GPIO_INIT(void);
 	void LED_SWITCH(eGPIO_STATE state);
-	void EXTI0_1_IRQHandler(void);
 		
 #endif

@@ -1,10 +1,8 @@
 #include "clock.h"
 #include "i2c.h"
 #include "gpio.h"
-#include <math.h>
 
-volatile static uint16_t cnt = 1, cnt2 = 0;
-volatile static uint8_t pin = 0, state = 0;
+volatile static uint8_t counter = 0;
 
 int main(void)
 {
@@ -12,43 +10,62 @@ int main(void)
 	SysTick_Config(8000000/1000);
 	
 	GPIO_INIT();
-	I2C_INIT();
-	I2C_SET_PORTB_OUTPUTS();
 	
-
+	LED_SWITCH(LED_OFF);
+		I2C_INIT();
+		MCP23017_SET_PORTB_OUTPUTS();
+	LED_SWITCH(LED_ON);
+	
 	while(1)
 	{
-		if(state == 0)
+		while(counter < 5)
 		{
-			if(cnt)
+			for(uint8_t i = 0; i < 7; i++)
 			{
-				I2C_SEND(pin++);
-				if(pin > 4) cnt = 0;
+				MCP23017_SET_PORTB_PIN_LOW_AND_OTHER_HIGH(i);
+				delay_ms(20);
 			}
-			else 
+			
+			for(uint8_t j = 7; j > 0; j--)
 			{
-				I2C_SEND(pin--);
-				if(pin == 0 || pin >= 250) cnt = 1;
+				MCP23017_SET_PORTB_PIN_LOW_AND_OTHER_HIGH(j);
+				delay_ms(20);
 			}
-			delay_ms(15);
-		}
-		else if(state == 1)
-		{
-			I2C_SEND_REGISTER(0x2B);
-			delay_ms(200);
-			I2C_SEND_REGISTER(0x35);
-			delay_ms(200);
 			
-			cnt2 += 20;
-		}
+			counter++;
+		}	
 		
+		MCP23017_SEND_PORTB_REGISTER(0xFF);
 		
-		if(cnt2++ >= 100)
+		while(counter < 10)
 		{
-			if(state == 1) state = 0;
-			else if(state == 0) state = 1;
 			
-			cnt2 = 0;
-		}
+			MCP23017_SEND_PORTB_REGISTER(0xC3);
+			delay_ms(100);
+			MCP23017_SEND_PORTB_REGISTER(0x18);
+			delay_ms(150);
+			MCP23017_SEND_PORTB_REGISTER(0x24);
+			delay_ms(100);
+			
+			counter++;
+		}	
+		
+		MCP23017_SEND_PORTB_REGISTER(0xFF);
+		
+		while(counter < 13)
+		{
+			
+			MCP23017_SEND_PORTB_REGISTER(0xFF);
+			delay_ms(250);
+			MCP23017_SEND_PORTB_REGISTER(0x0);
+			delay_ms(250);
+			
+			counter++;
+		}	
+		
+		MCP23017_SEND_PORTB_REGISTER(0xFF);
+		delay_ms(500);
+		counter = 0;
+		
 	}
 }
