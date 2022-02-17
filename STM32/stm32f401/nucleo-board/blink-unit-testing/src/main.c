@@ -1,7 +1,5 @@
 #include "main.h"
 
-void LED_Init();
-
 int main(void) {
   HAL_Init();
   LED_Init();
@@ -13,7 +11,7 @@ int main(void) {
   }
 }
 
-void LED_Init() {
+void LED_Init(void) {
   LED_GPIO_CLK_ENABLE();
   GPIO_InitTypeDef GPIO_InitStruct;
   GPIO_InitStruct.Pin = LED_PIN;
@@ -21,6 +19,11 @@ void LED_Init() {
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(LED_GPIO_PORT, &GPIO_InitStruct);
+}
+
+void LED_DeInit(void)
+{
+    HAL_GPIO_DeInit(LED_GPIO_PORT, LED_PIN);
 }
 
 void SysTick_Handler(void) {
