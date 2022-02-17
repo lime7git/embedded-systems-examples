@@ -1,0 +1,2 @@
+Making simple unit testing for nucleo f401re blink application following this tutorial - 
+https://docs.platformio.org/en/latest/tutorials/ststm32/stm32cube_debugging_unit_testing.html#tutorial-stm32cube-debugging-unit-testing
