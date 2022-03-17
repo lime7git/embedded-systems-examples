@@ -7,12 +7,27 @@
 **/*.uvoptx
 
 # STM32Cube copied library and project folders
-Drivers/*
-MDK-ARM/*
-EWARM/*
+**/Drivers/*
+**/MDK-ARM/*
+**/EWARM/*
 # CrossWorks project files
 !*/*.hzp
 !*/*.hzs
 
 *.o
 .mxproject
+
+#HAL
+.pydevproject
+.project
+.cproject
+*.o
+*.pyc
+/bin
+/lib
+/objs
+*.depend
+.emacs.bak
+TAGS
+include.local.mk
+output
