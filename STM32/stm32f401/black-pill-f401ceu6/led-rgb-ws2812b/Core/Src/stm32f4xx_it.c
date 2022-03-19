@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#include "stdlib.h"
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -41,12 +41,123 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+															
+volatile uint8_t lcdpos = 0;
+volatile int16_t lcdvalue = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
+void Led7seg_WriteDigit(uint8_t pos, uint8_t num)
+{
+	GPIOB->ODR &= ~GPIO_ODR_OD10;	//	B
+	GPIOB->ODR &= ~GPIO_ODR_OD2;	// 	F
+	GPIOB->ODR &= ~GPIO_ODR_OD1;	// 	A
+	GPIOB->ODR &= ~GPIO_ODR_OD0;	//	G
+	GPIOA->ODR &= ~GPIO_ODR_OD5;	//	C
+	GPIOA->ODR &= ~GPIO_ODR_OD4;	//	E
+	GPIOA->ODR &= ~GPIO_ODR_OD3;	//	D
+	
+	GPIOB->ODR &= ~GPIO_ODR_OD12;	
+	GPIOB->ODR &= ~GPIO_ODR_OD13;
+	GPIOB->ODR &= ~GPIO_ODR_OD14;
+	
+	switch(pos)
+	{
+		case 0:	GPIOB->ODR |= GPIO_ODR_OD12;	break;
+		case 1:	GPIOB->ODR |= GPIO_ODR_OD13;	break;
+		case 2:	GPIOB->ODR |= GPIO_ODR_OD14;	break;
+	}
+	switch(num)
+	{
+		case 0:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			GPIOA->ODR |= GPIO_ODR_OD3;		// D
+			GPIOA->ODR |= GPIO_ODR_OD4;		// E
+			GPIOB->ODR |= GPIO_ODR_OD2;		// F
+			break;
+		case 1:
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			break;
+		case 2:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD3;		// D
+			GPIOA->ODR |= GPIO_ODR_OD4;		// E
+			GPIOB->ODR |= GPIO_ODR_OD0;		// G
+			break;
+		case 3:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			GPIOA->ODR |= GPIO_ODR_OD3;		// D
+			GPIOB->ODR |= GPIO_ODR_OD0;		// G
+			break;
+		case 4:
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			GPIOB->ODR |= GPIO_ODR_OD2;		// F
+			GPIOB->ODR |= GPIO_ODR_OD0;		// G
+			break;
+		case 5:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			GPIOA->ODR |= GPIO_ODR_OD3;		// D
+			GPIOB->ODR |= GPIO_ODR_OD2;		// F
+			GPIOB->ODR |= GPIO_ODR_OD0;		// G
+			break;
+		case 6:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			GPIOA->ODR |= GPIO_ODR_OD3;		// D
+			GPIOA->ODR |= GPIO_ODR_OD4;		// E
+			GPIOB->ODR |= GPIO_ODR_OD2;		// F
+			GPIOB->ODR |= GPIO_ODR_OD0;		// G
+			break;
+		case 7:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			break;
+		case 8:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			GPIOA->ODR |= GPIO_ODR_OD3;		// D
+			GPIOA->ODR |= GPIO_ODR_OD4;		// E
+			GPIOB->ODR |= GPIO_ODR_OD2;		// F
+			GPIOB->ODR |= GPIO_ODR_OD0;		// G
+			break;
+		case 9:
+			GPIOB->ODR |= GPIO_ODR_OD1; 	// A
+			GPIOB->ODR |= GPIO_ODR_OD10;	// B
+			GPIOA->ODR |= GPIO_ODR_OD5;		// C
+			GPIOB->ODR |= GPIO_ODR_OD2;		// F
+			GPIOB->ODR |= GPIO_ODR_OD0;		// G
+			break;
+	}
+}
+
+void Led7seg_WriteNumber(void)
+{	
+	uint8_t tab[3];
+	
+	if(lcdvalue >=0 )
+	{		
+		tab[1] = (lcdvalue % 10) / 1;
+		tab[2] = (lcdvalue % 100) / 10;
+		tab[0] = (lcdvalue % 1000) / 100;
+	}
+	
+	Led7seg_WriteDigit(lcdpos, tab[lcdpos]);
+	lcdpos++;
+	if(lcdpos >= 3)
+		lcdpos = 0;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -55,7 +166,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_tim2_ch1;
+extern DMA_HandleTypeDef hdma_tim1_ch1;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -183,7 +294,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
+	Led7seg_WriteNumber();
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
@@ -199,17 +310,17 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles DMA1 stream5 global interrupt.
+  * @brief This function handles DMA2 stream1 global interrupt.
   */
-void DMA1_Stream5_IRQHandler(void)
+void DMA2_Stream1_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Stream5_IRQn 0 */
+  /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
 
-  /* USER CODE END DMA1_Stream5_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_tim2_ch1);
-  /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
+  /* USER CODE END DMA2_Stream1_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_tim1_ch1);
+  /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
 
-  /* USER CODE END DMA1_Stream5_IRQn 1 */
+  /* USER CODE END DMA2_Stream1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
