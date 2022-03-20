@@ -48,7 +48,7 @@ volatile uint16_t encoder_pulse_counter;
 volatile uint16_t previous_encoder_pulse_counter;
 
 
-volatile uint16_t pwmData[124];
+volatile uint16_t pwmData[364];
 volatile int green, red, blue;
 
 volatile uint8_t state = 0;
@@ -97,12 +97,17 @@ void send (uint8_t Green, uint8_t Red, uint8_t Blue)
 		j--;
 	}
 	
-	for(int i = 123; i >= 74; i--)
+	for(int i = 74; i <= 313; i++)
+	{
+		pwmData[i] = pwmData[i - 24];
+	}
+	
+	for(int i = 314; i <= 363; i++)
 	{
 		pwmData[i] = 0;
 	}
 
-	HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *)pwmData, 124);
+	HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *)pwmData, 364);
 	
 }
 
