@@ -1,0 +1,91 @@
+Serial user command interface, just simply first define your settings in 'commands_interface.h', include this two headers into your main.c
+
+	#include "circular_buffer.h"
+	#include "commands_interface.h"
+
+Next init circular buffer e.g. :
+	
+	tCircular_buffer uart_buffer;
+	tCircular_buffer_init(&uart_buffer, 128);
+	
+Add 'Command_IRQ_Handler()' into your serial data reciever interrupt e.g. :
+
+	void USART2_IRQHandler(void)
+	{
+	  /* USER CODE BEGIN USART2_IRQn 0 */
+		Command_IRQ_Handler(&uart_buffer, (uint8_t)huart2.Instance->DR);
+	  /* USER CODE END USART2_IRQn 0 */
+	  HAL_UART_IRQHandler(&huart2);
+	  /* USER CODE BEGIN USART2_IRQn 1 */
+
+	  /* USER CODE END USART2_IRQn 1 */
+	}
+	
+Add 'Command_Parser_Handler()' to main while loop to execute received commands :
+
+	Command_Parser_Handler(&uart_buffer);
+
+
+######################## ADDING NEW COMMAND ########################
+
+Add your command type in 'commands_interface.h' eCOMMANDS enum.
+
+Next add your command in 'Command_Get_Type()' function in 'commands_interface.c' file as following :
+
+	if	   (strncmp(command_type, "LED", 	counter) == 0) type = LED;
+	else if(strncmp(command_type, "STATE",	counter) == 0) type = STATE;
+	else if(strncmp(command_type, "READY", 	counter) == 0) type = READY;
+	...
+	else if(strncmp(command_type, "COMMAND1", 	counter) == 0) type = COMMAND1;
+	else if(strncmp(command_type, "COMMAND2", 	counter) == 0) type = COMMAND2;
+	...
+	else type = UNKNOWN;
+	
+Last step is define what your commands doing in 'Command_Execute()' function, following schematic :
+
+	case YOUR_COMMAND:
+	{
+		/* do some things */
+		
+		break;
+	}
+	
+If you want to take parameters from your command, just simply add in previous step ; 
+
+	case YOUR_COMMAND:
+	{
+		char param_buffer[PARAM_BUFFER_ROWS][PARAM_BUFFER_COLS];
+		Command_Get_Params(command, param_buffer);
+		
+		/* do some things */
+		
+		break;
+	}
+	
+Now your params is stored in param_buffer[i][j], where i is a parameter number (max parameters number defined by PARAM_BUFFER_ROWS), and j is a parameter max size defined by PARAM_BUFFER_COLS. In e.g. :
+
+	case STATE:
+	{
+		char param_buffer[PARAM_BUFFER_ROWS][PARAM_BUFFER_COLS];
+		Command_Get_Params(command, param_buffer);
+
+		uint8_t state = 0;
+			
+		if(param_buffer[0][0] == 'G' && param_buffer[0][1] == 'E' && param_buffer[0][2] == 'T')	// if first parameter == "GET"
+		{
+			char buf[32];
+			sprintf(buf, "Actual state = %i \r\n", state);
+			Serial_Log(buf);
+		}
+		else if(param_buffer[0][0] == 'S' && param_buffer[0][1] == 'E' && param_buffer[0][2] == 'T') // if first parameter == "SET"
+		{	
+			if((atoi(param_buffer[1]) >= 0) && (atoi(param_buffer[1]) <= 10)) // if second parameter in valid range
+			state = atoi(param_buffer[0]);
+		}
+		else
+		{
+			Serial_Log("\r\nUnknown state!\r\n");	
+		}				
+			
+		break;
+	}
