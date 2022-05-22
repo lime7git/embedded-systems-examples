@@ -168,9 +168,5 @@ void Command_IRQ_Handler(tCircular_buffer *hBuffer, uint8_t data)	// place insid
 }
 void Serial_Log(const char *message)
 {
-	while(*message)
-	{
-		UART1_SendChar(*message++);
-	}
+	HAL_UART_Transmit(&huart2, (uint8_t*)message, strlen(message), 100);
 }
-
